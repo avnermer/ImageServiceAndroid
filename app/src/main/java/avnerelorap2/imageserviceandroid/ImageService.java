@@ -1,13 +1,32 @@
 package avnerelorap2.imageserviceandroid;
 
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class ImageService extends Service {
-    public ImageService(){}
+
+    //members
+    BroadcastReceiver receiver;
+    ArrayList<File> images;
+    Client client;
 
     @Nullable
     @Override
@@ -16,17 +35,141 @@ public class ImageService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // continue writing code here!
+        client = new Client();
     }
 
     public int onStartCommand(Intent intent, int flag, int startId)
     {
         Toast.makeText(this, "Service starting...", Toast.LENGTH_SHORT).show();
+
+
+
+        final IntentFilter theFilter = new IntentFilter();
+        theFilter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
+        theFilter.addAction("android.net.wifi.STATE_CHANGE");
+        this.receiver = new BroadcastReceiver()
+        {
+            @Override
+              public void onReceive(Context context, Intent intent)
+            {
+                WifiManager wifiManager =
+                        (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                if (networkInfo != null)
+                {
+                    if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+                    {
+                        //get the different network states
+                        if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+                            // Starting the Transfer
+                            final NotificationCompat.Builder builder =
+                                    new NotificationCompat.Builder(context, "default");
+                            startTransfer(builder);
+
+                        }
+                    }
+                }
+            }    };
+        // Registers the receiver so that your service will listen for
+        // broadcasts
+        this.registerReceiver(this.receiver, theFilter);
         return START_STICKY;
+    }
+
+    private void startTransfer(final NotificationCompat.Builder builder)
+    {
+        final NotificationManager manager =
+                (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+
+        builder.setContentTitle("Images Transfer").setContentText("Transferring..")
+                .setSmallIcon(R.drawable.ic_launcher_background);
+
+        //start a transferring thread
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                int progressCount = 0;
+                int progressPercentage;
+                int listSize = images.size();
+
+                try
+                {
+                    loadLocalImages(null, null);
+                    client.connectToServer();
+                    for(File image : images)
+                    {
+                        try {
+                            client.sendImage(image);
+                        } catch (Exception e)
+                        {
+                            Log.e("TCP", "S: Error", e);
+                        }
+                        ++progressCount;
+                        progressPercentage = (progressCount/listSize) * 100;
+                        builder.setProgress(100, progressPercentage, false);
+                        builder.setContentText(progressPercentage + "%");
+                        manager.notify(1, builder.build());
+                    }
+
+                    // in the end of transfer
+                    client.closeConnection();
+                    builder.setContentTitle("Done");
+                    builder.setContentText("Images transfer completed");
+                    manager.notify(1, builder.build());
+                } catch (Exception e) {
+                    Log.e("Connection Error", "Images transfer terminated", e);
+                    client.closeConnection();
+                }
+            }
+        }).start();
+
+    }
+
+    private void loadLocalImages(ArrayList<File> itms, ArrayList<File> imgsList)
+    {
+        ArrayList<File> items = itms;
+        ArrayList<File> imagesList = imgsList;
+
+        //if it's first recursive call
+        if(imgsList == null && itms == null)
+        {
+            // Getting the Camera Folder
+            //todo add camera path?
+            File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+            if (dcim == null) {return;}
+
+            File[] itemsArr =  dcim.listFiles();
+            if ( itemsArr == null) {return;}
+
+            items = new ArrayList<>(Arrays.asList( itemsArr));
+            //initialize images temp list in order to avoid concurrent modification
+            imagesList = new ArrayList<>();
+        }
+        for (File item : items)
+        {
+            if(item.isDirectory())
+            {
+                //prepare argument for recursion
+                File[] newItemsArr =  item.listFiles();
+                if ( newItemsArr == null) {return;}
+                ArrayList<File> newDirItems = new ArrayList<>(Arrays.asList( newItemsArr));
+
+                //recurse
+                loadLocalImages(newDirItems, imagesList);
+            }
+            else if(item.isFile())
+            {
+                if(item.toString().contains(".jpg")) {imagesList.add(item);}
+            }
+        }
+        this.images = imagesList;
     }
 
     public void onDestroy()
     {
+        super.onDestroy();
         Toast.makeText(this, "Service ending...", Toast.LENGTH_SHORT).show();
     }
 }
