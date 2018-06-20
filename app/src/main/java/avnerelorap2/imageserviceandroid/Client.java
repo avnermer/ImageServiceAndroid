@@ -52,7 +52,13 @@ public class Client {
             byte[] imageByte = getBytesFromBitmap(bm);
             byte[] received = new byte[10];
 
+            //send image name
             outputStream.write(image.getName().getBytes());
+            //wait for confirmation
+            if((inputStream.read(received) <= 0)) {return;}
+
+            //send image size in bytes
+            outputStream.write(imageByte);
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
 
