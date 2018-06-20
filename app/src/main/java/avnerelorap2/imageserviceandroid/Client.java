@@ -26,7 +26,7 @@ public class Client {
         try {
             InetAddress serverAddr = InetAddress.getByName("10.0.0.2");
             //create a socket to make the connection with the server
-            socket = new Socket(serverAddr, 8005);
+            socket = new Socket(serverAddr, 8200);
             outputStream = socket.getOutputStream();
             inputStream = socket.getInputStream();
 
