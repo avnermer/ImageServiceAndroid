@@ -136,7 +136,7 @@ public class ImageService extends Service {
         if(imgsList == null && itms == null)
         {
             // Getting the Camera Folder
-            //todo add camera path?
+            
             File dcim = new File(Environment
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
                     "Camera");
