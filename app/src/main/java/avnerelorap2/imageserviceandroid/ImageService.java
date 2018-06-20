@@ -137,7 +137,9 @@ public class ImageService extends Service {
         {
             // Getting the Camera Folder
             //todo add camera path?
-            File dcim = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+            File dcim = new File(Environment
+                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+                    "Camera");
             if (dcim == null) {return;}
 
             File[] itemsArr =  dcim.listFiles();
