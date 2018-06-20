@@ -56,13 +56,9 @@ public class Client {
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
 
-            //send image size in bytes
-            outputStream.write(imageByte);
-            //wait for confirmation
-            if((inputStream.read(received) <= 0)) {return;}
-
             //send image
             outputStream.write(imageByte);
+            //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
             outputStream.flush();
         } catch (Exception e) {
