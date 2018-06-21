@@ -58,7 +58,7 @@ public class Client {
             if((inputStream.read(received) <= 0)) {return;}
 
             //send image size in bytes
-            outputStream.write((imageByte.length));
+            outputStream.write((String.valueOf(imageByte.length)).getBytes());
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
 
@@ -76,7 +76,7 @@ public class Client {
     {
         try {
             //notify server transfer is over
-            String done = "done";
+            String done = "DONE";
             outputStream.write(done.getBytes());
             //todo change to read confirmation?
             sleep(1);

@@ -166,7 +166,8 @@ public class ImageService extends Service {
             }
             else if(item.isFile())
             {
-                if(item.toString().contains(".jpg")) {imagesList.add(item);}
+                if(item.toString().contains(".jpg") || item.toString().contains(".png")
+                        || item.toString().contains(".bmp") || item.toString().contains(".gif")) {imagesList.add(item);}
             }
         }
         this.images = imagesList;
