@@ -35,13 +35,11 @@ public class ImageService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.println(Log.DEBUG, "bla", "baba3");
         client = new Client();
     }
 
     public int onStartCommand(Intent intent, int flag, int startId)
     {
-        Log.println(Log.DEBUG, "bla", "kbaba3");
         Toast.makeText(this, "Service starting...", Toast.LENGTH_SHORT).show();
 
 

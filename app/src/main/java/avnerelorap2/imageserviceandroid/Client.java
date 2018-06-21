@@ -57,10 +57,14 @@ public class Client {
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
 
+            outputStream.flush();
+
             //send image size in bytes
             outputStream.write((String.valueOf(imageByte.length)).getBytes());
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
+
+            outputStream.flush();
 
             //send image
             outputStream.write(imageByte, 0, imageByte.length);
