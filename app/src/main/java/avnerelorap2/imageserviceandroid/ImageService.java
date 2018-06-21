@@ -35,11 +35,13 @@ public class ImageService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.println(Log.DEBUG, "bla", "baba3");
         client = new Client();
     }
 
     public int onStartCommand(Intent intent, int flag, int startId)
     {
+        Log.println(Log.DEBUG, "bla", "kbaba3");
         Toast.makeText(this, "Service starting...", Toast.LENGTH_SHORT).show();
 
 
@@ -92,11 +94,12 @@ public class ImageService extends Service {
             {
                 int progressCount = 0;
                 int progressPercentage;
+                loadLocalImages(null, null);
                 int listSize = images.size();
 
                 try
                 {
-                    loadLocalImages(null, null);
+
                     client.connectToServer();
                     for(File image : images)
                     {
@@ -136,7 +139,7 @@ public class ImageService extends Service {
         if(imgsList == null && itms == null)
         {
             // Getting the Camera Folder
-            
+
             File dcim = new File(Environment
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
                     "Camera");

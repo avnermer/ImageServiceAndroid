@@ -24,7 +24,7 @@ public class Client {
     public void connectToServer()
     {
         try {
-            InetAddress serverAddr = InetAddress.getByName("10.0.0.2");
+            InetAddress serverAddr = InetAddress.getByName("192.168.1.105");
             //create a socket to make the connection with the server
             socket = new Socket(serverAddr, 8200);
             outputStream = socket.getOutputStream();
@@ -58,7 +58,7 @@ public class Client {
             if((inputStream.read(received) <= 0)) {return;}
 
             //send image size in bytes
-            outputStream.write(imageByte);
+            outputStream.write((imageByte.length));
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
 
@@ -69,9 +69,6 @@ public class Client {
             outputStream.flush();
         } catch (Exception e) {
             Log.e("TCP", "S: Error", e);
-        } finally
-        {
-            socket.close();
         }
     }
 

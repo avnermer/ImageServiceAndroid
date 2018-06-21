@@ -3,6 +3,7 @@ package avnerelorap2.imageserviceandroid;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
@@ -16,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startService(View view)
     {
+        Log.println(Log.DEBUG, "bla", "kaka");
         Intent intent = new Intent(this, ImageService.class);
         startService(intent);
     }
