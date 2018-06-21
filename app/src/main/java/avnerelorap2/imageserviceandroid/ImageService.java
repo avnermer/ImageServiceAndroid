@@ -121,7 +121,6 @@ public class ImageService extends Service {
                     manager.notify(1, builder.build());
                 } catch (Exception e) {
                     Log.e("Connection Error", "Images transfer terminated", e);
-                    client.closeConnection();
                 }
             }
         }).start();
