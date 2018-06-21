@@ -9,9 +9,11 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -42,8 +44,6 @@ public class ImageService extends Service {
     {
         Toast.makeText(this, "Service starting...", Toast.LENGTH_SHORT).show();
 
-
-
         final IntentFilter theFilter = new IntentFilter();
         theFilter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
         theFilter.addAction("android.net.wifi.STATE_CHANGE");
@@ -61,11 +61,7 @@ public class ImageService extends Service {
                     {
                         //get the different network states
                         if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
-                            // Starting the Transfer
-                            final NotificationCompat.Builder builder =
-                                    new NotificationCompat.Builder(context, "default");
-                            startTransfer(builder);
-
+                            startTransfer(context);
                         }
                     }
                 }
@@ -76,13 +72,15 @@ public class ImageService extends Service {
         return START_STICKY;
     }
 
-    private void startTransfer(final NotificationCompat.Builder builder)
+    private void startTransfer(Context context)
     {
-        final NotificationManager manager =
-                (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        final NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(context, "default");
+        final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        builder.setContentTitle("Images Transfer").setContentText("Transferring..")
-                .setSmallIcon(R.drawable.ic_launcher_background);
+        builder.setSmallIcon(R.drawable.ic_launcher_background);
+        builder.setContentTitle("Images Transfer");
+        builder.setContentText("Transferring..");
 
         //start a transferring thread
         new Thread(new Runnable()
@@ -91,9 +89,7 @@ public class ImageService extends Service {
             public void run()
             {
                 int progressCount = 0;
-                int progressPercentage;
                 loadLocalImages(null, null);
-                int listSize = images.size();
 
                 try
                 {
@@ -107,18 +103,17 @@ public class ImageService extends Service {
                         {
                             Log.e("TCP", "S: Error", e);
                         }
-                        ++progressCount;
-                        progressPercentage = (progressCount/listSize) * 100;
-                        builder.setProgress(100, progressPercentage, false);
-                        builder.setContentText(progressPercentage + "%");
+                        progressCount = progressCount + 100/ images.size();
+                        builder.setProgress(100, progressCount, false);
                         manager.notify(1, builder.build());
                     }
 
                     // in the end of transfer
-                    client.closeConnection();
+                    builder.setProgress(0, 0, false);
                     builder.setContentTitle("Done");
                     builder.setContentText("Images transfer completed");
                     manager.notify(1, builder.build());
+                    client.closeConnection();
                 } catch (Exception e) {
                     Log.e("Connection Error", "Images transfer terminated", e);
                 }
