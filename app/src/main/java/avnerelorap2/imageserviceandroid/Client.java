@@ -63,7 +63,8 @@ public class Client {
             if((inputStream.read(received) <= 0)) {return;}
 
             //send image
-            outputStream.write(imageByte);
+            outputStream.write(imageByte, 0, imageByte.length);
+
             //wait for confirmation
             if((inputStream.read(received) <= 0)) {return;}
             outputStream.flush();
