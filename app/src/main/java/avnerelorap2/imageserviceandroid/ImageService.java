@@ -1,5 +1,6 @@
 package avnerelorap2.imageserviceandroid;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -47,8 +48,10 @@ public class ImageService extends Service {
         final IntentFilter theFilter = new IntentFilter();
         theFilter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
         theFilter.addAction("android.net.wifi.STATE_CHANGE");
+
         this.receiver = new BroadcastReceiver()
         {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
               public void onReceive(Context context, Intent intent)
             {
@@ -71,12 +74,15 @@ public class ImageService extends Service {
         this.registerReceiver(this.receiver, theFilter);
         return START_STICKY;
     }
-
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void startTransfer(Context context)
     {
         final NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, "default");
         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+ //       NotificationChannel channel = new NotificationChannel("default", "Progress bar", NotificationManager.IMPORTANCE_DEFAULT);
+ //       channel.setDescription("Progress bar of image transfer");
+ //       manager.createNotificationChannel(channel);
 
         builder.setSmallIcon(R.drawable.ic_launcher_background);
         builder.setContentTitle("Images Transfer");
@@ -169,5 +175,6 @@ public class ImageService extends Service {
     {
         super.onDestroy();
         Toast.makeText(this, "Service ending...", Toast.LENGTH_SHORT).show();
+        this.unregisterReceiver(this.receiver);
     }
 }
